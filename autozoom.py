@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
 	objTo = process_autozoom({
 		'fltShift': 100.0,
-		'fltZoom': 1.25,
+		'fltZoom': 1.5,
 		'objFrom': objFrom
 	})
 
