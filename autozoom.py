@@ -27,6 +27,7 @@ import torch
 import torchvision
 import urllib
 import zipfile
+from tqdm import tqdm
 
 ##########################################################
 
@@ -60,39 +61,40 @@ for strOption, strArgument in getopt.getopt(sys.argv[1:], '', [ strParameter[2:]
 ##########################################################
 
 if __name__ == '__main__':
-	npyImage = cv2.imread(filename=arguments_strIn, flags=cv2.IMREAD_COLOR)
+	for fname in tqdm(os.listdir(arguments_strIn)):
+		npyImage = cv2.imread(filename=arguments_strIn+fname, flags=cv2.IMREAD_COLOR)
 
-	intWidth = npyImage.shape[1]
-	intHeight = npyImage.shape[0]
+		intWidth = npyImage.shape[1]
+		intHeight = npyImage.shape[0]
 
-	fltRatio = float(intWidth) / float(intHeight)
+		fltRatio = float(intWidth) / float(intHeight)
 
-	intWidth = min(int(1024 * fltRatio), 1024)
-	intHeight = min(int(1024 / fltRatio), 1024)
+		intWidth = min(int(1024 * fltRatio), 1024)
+		intHeight = min(int(1024 / fltRatio), 1024)
 
-	npyImage = cv2.resize(src=npyImage, dsize=(intWidth, intHeight), fx=0.0, fy=0.0, interpolation=cv2.INTER_AREA)
+		npyImage = cv2.resize(src=npyImage, dsize=(intWidth, intHeight), fx=0.0, fy=0.0, interpolation=cv2.INTER_AREA)
 
-	process_load(npyImage, {})
+		process_load(npyImage, {})
 
-	objFrom = {
-		'fltCenterU': intWidth / 2.0,
-		'fltCenterV': intHeight / 2.0,
-		'intCropWidth': int(math.floor(0.97 * intWidth)),
-		'intCropHeight': int(math.floor(0.97 * intHeight))
-	}
+		objFrom = {
+			'fltCenterU': intWidth / 2.0,
+			'fltCenterV': intHeight / 2.0,
+			'intCropWidth': int(math.floor(0.97 * intWidth)),
+			'intCropHeight': int(math.floor(0.97 * intHeight))
+		}
 
-	objTo = process_autozoom({
-		'fltShift': 100.0,
-		'fltZoom': 1.5,
-		'objFrom': objFrom
-	})
+		objTo = process_autozoom({
+			'fltShift': 100.0,
+			'fltZoom': 1.5,
+			'objFrom': objFrom
+		})
 
-	npyResult = process_kenburns({
-		'fltSteps': numpy.linspace(0.0, 1.0, 75).tolist(),
-		'objFrom': objFrom,
-		'objTo': objTo,
-		'boolInpaint': True
-	})
+		npyResult = process_kenburns({
+			'fltSteps': numpy.linspace(0.0, 1.0, 75).tolist(),
+			'objFrom': objFrom,
+			'objTo': objTo,
+			'boolInpaint': True
+		})
 
-	moviepy.editor.ImageSequenceClip(sequence=[ npyFrame[:, :, ::-1] for npyFrame in npyResult + list(reversed(npyResult))[1:] ], fps=25).write_videofile(arguments_strOut)
+		moviepy.editor.ImageSequenceClip(sequence=[ npyFrame[:, :, ::-1] for npyFrame in npyResult + list(reversed(npyResult))[1:] ], fps=25).write_videofile(arguments_strOut+fname.replace('.jpg', '.mp4'))
 # end
